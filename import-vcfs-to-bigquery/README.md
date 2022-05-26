@@ -54,13 +54,13 @@ At step 4 of "Complete the following steps to create a service account key file:
 
 ## Use Variant Transforms tool to import VCF data into BigQuery
 
-1. Launch a virtual machine from which to call Variant Transforms.
+### Launch a virtual machine from which to call Variant Transforms
 
 ```
 gcloud beta compute --project=${MY_PROJECT_ID} instances create cnvnator-vcf-to-bq-invoker --zone=us-west1-b --machine-type=n1-standard-1  --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=variant-transforms-invoker@${MY_PROJECT_ID}.iam.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --image=ubuntu-1604-xenial-v20210429 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-balanced --boot-disk-device-name=cnvnator-vcf-to-bq-invoker --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any
 ```
 
-2. SSH into the virtual machine.
+### SSH into the virtual machine
 
 Note: If your SSH connection fails with return code 255, check to make sure your firewall setting to allow tcp connections on port 22.
 
@@ -68,7 +68,7 @@ Note: If your SSH connection fails with return code 255, check to make sure your
 gcloud beta compute ssh --zone "us-west1-b" "cnvnator-vcf-to-bq-invoker"  --project "${MY_PROJECT_ID}"
 ```
 
-3. Install Screen and Docker
+### Install Screen and Docker
 
 We are going to run the VCF to Bigquery pipeline using the variant transforms Docker image, so we'll need Docker. I'm also going to install Screen so that I can close the SSH connection from my local computer to the VM without closing the process.
 
@@ -84,7 +84,12 @@ sudo docker run hello-world
 sudo apt install screen
 ```
 
-4. Follow the "Using Docker" instructions to launch your Variant Transforms job.
+Launch a new Screen session
+```
+screen -S variant_transforms
+```
+
+### Launch the Variant Transforms job
 
 Reference: https://github.com/googlegenomics/gcp-variant-transforms.
 
@@ -116,26 +121,32 @@ docker run -v ~/.config:/root/.config \
   "${COMMAND}"
 ```
 
-Paste it into a file on your VM and run it.
+Paste the script into a file.
 
 ```
-# 
+# Use the vi text editor to create a new bash script
 vi vcf-to-bq.sh
-## NOTE: I should use screen/tmux/nohup to run this so I don't have to maintain SSH connection
 # Copy the (above) script from the Variant Transforms repo and replace it with your environment variables.
+```
+
+Launch the variant transforms job.
+
+```
+# Change file permission to allow execution
 chmod +x vcf-to-bq.sh
+# Run job script
 sudo ./vcf-to-bq.sh
 ```
 
-If you need to close your SSH connection you can detach and reattach to the Screen session when you reconnect.
+**(Optional)** If you need to close your SSH connection you can detach and reattach to the Screen session when you reconnect.
 
-Detach from Screen: Hold `Ctrl+a` and press `d`
-Reattach to Screen: Type `screen -r`
+* Detach from Screen: Hold `Ctrl+a` and press `d`
+* Reattach to Screen: Type `screen -r`
 
 Reference: https://linuxize.com/post/how-to-use-linux-screen/
 
 
-5. Exit the VM and delete it.
+## Exit the VM and delete it
 
 Once your job is finished you can exit the VM and delete it so that it does not continue accruing charges.
 
